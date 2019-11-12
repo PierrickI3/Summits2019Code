@@ -14,13 +14,13 @@ These 2 applications (service & web) were created during the Genesys Advanced Pa
 
 Contains code to get real-time notifications about user presence (status) changes.
 
-### Requirements
+#### Requirements
 
 * Install [node.js](https://nodejs.org/).
 * A PureCloud Client Credentials OAuth client id. You can create one in your own org in the `Admin/OAuth` section.
 * A PureCloud user id to monitor. You can get the list of user ids using the [API Explorer](https://developer.mypurecloud.ie/developer-tools/#/api-explorer) (after clicking on this link, you may want to change the region if your org is not in .ie).
 
-### Getting started
+#### Getting started
 * Open the index.js file
 * Configure the variables on top appropriately
   * `environment`: your PureCloud environment (e.g. `mypurecloud.ie`) based on where your PureCloud organization is located
@@ -33,13 +33,13 @@ Contains code to get real-time notifications about user presence (status) change
 
 Contains code to get real-time notifications about queue member changes. It also contains a 2nd page (index2.html) which shows how the same data can be displayed in a chart.
 
-### Requirements
+#### Requirements
 
 * A PureCloud Implicit Grant OAuth client id. You can create one in your own org in the `Admin/OAuth` section.
 * A PureCloud queue id to monitor. You can get the list of queue ids using the [API Explorer](https://developer.mypurecloud.ie/developer-tools/#/api-explorer) (after clicking on this link, you may want to change the region if your org is not in .ie).
 * A web server. You can use [Visual Studio Code](https://code.visualstudio.com/) with the [Live Server extension](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) which exposes the page on `https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer` by default.
 
-### Getting started
+#### Getting started
 
 * Open the index.html file
 * Locate the `<script type="text/javascript>` section at the end of the file
@@ -47,7 +47,7 @@ Contains code to get real-time notifications about queue member changes. It also
 * Update the queueUsersPresenceTopic variable with your own queue id.
 * Browse to http://<DOMAIN>/index.html in your web browser (only tested with Google Chrome)
 
-### Same page with Chart
+#### Same page with Chart
 
 * Open the index2.html file
 * Locate the `<script type="text/javascript>` section at the end of the file
