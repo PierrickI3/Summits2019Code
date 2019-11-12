@@ -1,0 +1,17 @@
+{
+  "name": "HandsOnAPI",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Pierrick Lozach <pierrick.lozach@genesys.com> (genesys.com)",
+  "license": "ISC",
+  "dependencies": {
+    "purecloud-platform-client-v2": "^58.0.0",
+    "ws": "^7.1.2"
+  }
+}

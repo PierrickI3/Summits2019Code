@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Hello PureCloud</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+  <label id="status"></label>
+  <br />
+  <div style="width:60%;">
+    <canvas id="canvas"></canvas>
+  </div>
+</body>
+
+<script src="https://sdk-cdn.mypurecloud.com/javascript/58.0.0/purecloud-platform-client-v2.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+<script src="utils.js"></script>
+
+<script type="text/javascript">
+
+  // Configuration
+  var clientId = '<YOUR IMPLICIT GRANT OAUTH CLIENT ID HERE>'; // Change this to your own Implicit grant OAuth client id here from Admin/OAuth in your PureCloud organization
+  var environment = 'mypurecloud.ie'; // Change this if your PureCloud org is not in .ie
+  var redirectUrl = 'http://127.0.0.1/index2.html'; // Change this to the full path to your web site unless you use Visual Studio code with the Live Server extension. The same path should be specified in your Implicit grant OAuth in PureCloud
+  var queueUsersPresenceTopic = 'v2.routing.queues.<YOUR QUEUE ID HERE>.users'; // Change this to your own queue id
+  var webSocket;
+
+  // Obtain a reference to the platformClient object
+  const platformClient = require('platformClient');
+  const client = platformClient.ApiClient.instance;
+  client.setEnvironment(environment);
+
+  // Obtain a reference to the Notifications API
+  const notificationsApi = new platformClient.NotificationsApi();
+
+  // Login
+  client.loginImplicitGrant(clientId, redirectUrl, { state: "CONNECTED" })
+    .then((data) => {
+      $("#status").text("Logged In!");
+      // Get a channel
+      notificationsApi.postNotificationsChannels().then((channel) => {
+        // Open the channel
+        webSocket = new WebSocket(channel.connectUri);
+
+        // Process incoming messages
+        webSocket.onmessage = (message) => {
+          var data = JSON.parse(message.data);
+          if (data.topicName !== queueUsersPresenceTopic) {
+            return;
+          }
+          console.log(message);
+          if (data.metadata.memberCount != previousValue) {
+            previousValue = data.metadata.memberCount;
+
+            // Add new value to the chart
+            addToChart(message.timeStamp, data.metadata.memberCount);
+          }
+        }
+
+        // Subscribe to a topic
+        notificationsApi.putNotificationsChannelSubscriptions(channel.id, [
+          {
+            id: queueUsersPresenceTopic
+          }
+        ]);
+      })
+        .catch((error) => {
+          console.error(error);
+          alert(error);
+        });
+    })
+    .catch((err) => {
+      // Handle failure response
+      console.error(err);
+    });
+
+  // Chart configuration
+  var previousValue = 0;
+  var config = {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Queue Members',
+        backgroundColor: window.chartColors.red,
+        borderColor: window.chartColors.red,
+        data: [],
+        fill: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      title: {
+        display: true,
+        text: 'PureCloud Queue Members Line Chart'
+      },
+      tooltips: {
+        mode: 'index',
+        intersect: false,
+      },
+      hover: {
+        mode: 'nearest',
+        intersect: true
+      },
+      scales: {
+        xAxes: [{
+          display: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Date/Time'
+          }
+        }],
+        yAxes: [{
+          display: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Value'
+          }
+        }]
+      }
+    }
+  };
+
+  window.onload = function () {
+    var ctx = document.getElementById('canvas').getContext('2d');
+    window.myLine = new Chart(ctx, config);
+  };
+
+  var colorNames = Object.keys(window.chartColors);
+
+  function addToChart(timestamp, memberCount) {
+    if (config.data.datasets.length > 0) {
+      config.data.labels.push(timestamp);
+      config.data.datasets.forEach(function (dataset) {
+        dataset.data.push(memberCount);
+      });
+
+      window.myLine.update();
+    }
+  }
+
+</script>
+
+</html>
